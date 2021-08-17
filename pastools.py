@@ -68,6 +68,32 @@ def create_access_env_vars(host, path):
             'ACCESS_RUNNING_FILES': dirname}
 
 
+def add_access_env_vars(env):
+    # type: (str) -> str
+    """Add environment variables for Access.
+
+    Args:
+        env: job.attr_export_env_to_job
+
+    Returns:
+        A new job.attr_export_env_to_job
+
+    Raises:
+        ValueError: If PAS_PRIMARY_FILE is not found.
+    """
+    env_vars = parse_export_env(env)
+    if 'PAS_PRIMARY_FILE' in env_vars:
+        url = env_vars['PAS_PRIMARY_FILE']
+        host, path = parse_url(url)
+        vars = create_access_env_vars(host, path)
+        return env + \
+            ',ACCESS_INPUT_FILES=' + vars['ACCESS_INPUT_FILES'] + \
+            ',ACCESS_OUTPUT_FILES=' + vars['ACCESS_OUTPUT_FILES'] + \
+            ',ACCESS_RUNNING_FILES=' + vars['ACCESS_RUNNING_FILES']
+    else:
+        raise ValueError('PAS_PRIMARY_FILE is not found in:\n' + env)
+
+
 def create_logs(dirname, basename):
     # type: (str, str) -> tuple[str, str]
     """Create log files for stdout and strerr and returns those paths.
